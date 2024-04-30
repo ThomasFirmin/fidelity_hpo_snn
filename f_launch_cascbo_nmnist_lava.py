@@ -16,7 +16,6 @@ from search_spaces import get_mnist_rate_lava_cnt
 
 from zellij.core import (
     Loss,
-    MockModel,
     Experiment,
     Maximizer,
     DoNothing,
@@ -38,7 +37,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=int, default=None)
-parser.add_argument("--calls", type=int, default=100000)
+parser.add_argument("--time", type=int, default=3600)
 parser.add_argument("--dataset", type=str, default="NMNIST")
 parser.add_argument("--mpi", type=str, default=False)
 parser.add_argument("--gpu", dest="gpu", action="store_true")
@@ -51,7 +50,7 @@ parser.set_defaults(gpu=True, record_time=True)
 args = parser.parse_args()
 data_size = args.data
 dataset_name = args.dataset
-calls = args.calls
+time = args.time
 mpi = args.mpi
 gpu = args.gpu
 record_time = args.record_time
@@ -87,7 +86,6 @@ values = get_mnist_rate_lava_cnt()
 sp = UnitSearchspace(values)
 
 batch_size = 30
-time = 144000
 tstate = ICTurboState(sp.size, batch_size, torch.ones(1) * torch.inf)
 temperature = SkewedBell(1.9, 1000, 12)
 
@@ -152,5 +150,5 @@ else:
         ubound_evolv=ubound_evolv,
     )
 
-exp = Experiment(bo, loss, stop, save="test_casbo_nmnist")
+exp = Experiment(bo, loss, stop, save=save_file)
 exp.run()

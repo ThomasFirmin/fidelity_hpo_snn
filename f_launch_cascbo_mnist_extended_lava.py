@@ -37,7 +37,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=int, default=None)
-parser.add_argument("--calls", type=int, default=100000)
+parser.add_argument("--time", type=int, default=3600)
 parser.add_argument("--dataset", type=str, default="MNIST")
 parser.add_argument("--mpi", type=str, default=False)
 parser.add_argument("--gpu", dest="gpu", action="store_true")
@@ -50,7 +50,7 @@ parser.set_defaults(gpu=True, record_time=True)
 args = parser.parse_args()
 data_size = args.data
 dataset_name = args.dataset
-calls = args.calls
+time = args.time
 mpi = args.mpi
 gpu = args.gpu
 record_time = args.record_time
@@ -85,7 +85,6 @@ values = get_mnist_rate_lava_cnt_extended()
 sp = UnitSearchspace(values)
 
 batch_size = 30
-time = 50400
 tstate = ICTurboState(sp.size, batch_size, torch.ones(1) * torch.inf)
 temperature = SkewedBell(1.9, 1000, 12)
 

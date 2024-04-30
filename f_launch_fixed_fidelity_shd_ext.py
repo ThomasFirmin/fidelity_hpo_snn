@@ -25,11 +25,10 @@ from search_spaces import get_shd_lava_cnt_ext
 
 from zellij.core import (
     Loss,
-    MockModel,
     Experiment,
     Maximizer,
     MixedSearchspace,
-    Threshold,
+    Time,
 )
 
 from zellij.strategies.mixed import Default
@@ -42,11 +41,10 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=int, default=None)
-parser.add_argument("--calls", type=int, default=100000)
+parser.add_argument("--time", type=int, default=3600)
 parser.add_argument("--dataset", type=str, default="SHD")
 parser.add_argument("--mpi", type=str, default=False)
 parser.add_argument("--gpu", dest="gpu", action="store_true")
-parser.add_argument("--mock", dest="mock", action="store_true")
 parser.add_argument("--record_time", dest="record_time", action="store_true")
 parser.add_argument("--save", type=str, default="fixed_lava_shd")
 parser.add_argument("--gpu_per_node", type=int, default=1)
@@ -56,7 +54,7 @@ parser.set_defaults(gpu=True, record_time=True)
 args = parser.parse_args()
 data_size = args.data
 dataset_name = args.dataset
-calls = args.calls
+time = args.time
 mpi = args.mpi
 gpu = args.gpu
 mock = args.mock
@@ -77,28 +75,13 @@ model = Objective(
     max_epochs=100,
 )
 
-if mock:
-    loss = Loss(
-        objective=Maximizer("test"),
-        record_time=record_time,
-        mpi=mpi,
-        kwargs_mode=True,
-    )(
-        MockModel(
-            {
-                "valid": lambda *arg, **kwarg: np.random.random(),
-                "train": lambda *arg, **kwarg: np.random.random(),
-            }
-        )
-    )
-else:
-    loss = Loss(
-        objective=Maximizer("test"),
-        record_time=record_time,
-        mpi=mpi,
-        kwargs_mode=True,
-        threshold=1,
-    )(model)
+loss = Loss(
+    objective=Maximizer("test"),
+    record_time=record_time,
+    mpi=mpi,
+    kwargs_mode=True,
+    threshold=1,
+)(model)
 
 # Decision variables
 values = get_shd_lava_cnt_ext(convert=False)
@@ -113,7 +96,7 @@ if not os.path.exists(path):
 
 os.environ["TORCH_EXTENSIONS_DIR"] = path
 
-stop = Threshold(loss, "calls", calls)
+stop = Time(time)
 
 
 solutions = [

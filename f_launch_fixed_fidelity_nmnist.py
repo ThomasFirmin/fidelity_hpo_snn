@@ -25,24 +25,21 @@ from search_spaces import get_mnist_rate_lava_cnt
 
 from zellij.core import (
     Loss,
-    MockModel,
     Experiment,
     Maximizer,
     MixedSearchspace,
-    Threshold,
+    Time,
 )
 
 from zellij.strategies.mixed import Default
 
-import torch
-import numpy as np
 import os
 
 import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=int, default=None)
-parser.add_argument("--calls", type=int, default=100000)
+parser.add_argument("--time", type=int, default=3600)
 parser.add_argument("--dataset", type=str, default="NMNIST")
 parser.add_argument("--mpi", type=str, default=False)
 parser.add_argument("--gpu", dest="gpu", action="store_true")
@@ -97,7 +94,7 @@ if not os.path.exists(path):
 
 os.environ["TORCH_EXTENSIONS_DIR"] = path
 
-stop = Threshold(loss, "calls", calls)
+stop = Time(time)
 
 
 solutions = [
